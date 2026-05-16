@@ -3,7 +3,12 @@ import sys
 from pathlib import Path
 
 from core.scanner import scan_directory
-from output.console import print_scan_start, print_no_findings, print_findings
+from output.console import (
+    print_scan_start,
+    print_no_findings,
+    print_findings,
+    set_color_enabled
+)
 
 
 def main() -> int:
@@ -18,7 +23,16 @@ def main() -> int:
         help="Path to scan. Default: current directory"
     )
 
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored terminal output"
+    )
+
     args = parser.parse_args()
+
+    set_color_enabled(not args.no_color)
+
     scan_path = Path(args.path).resolve()
 
     if not scan_path.exists():

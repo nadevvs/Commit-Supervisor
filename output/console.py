@@ -7,13 +7,48 @@ SEVERITY_ORDER = {
     "LOW": 3
 }
 
+USE_COLOR = True
+
+COLOR_RESET = "\033[0m"
+
+COLOR_RED = "\033[31m"
+COLOR_ORANGE = "\033[38;5;208m"
+COLOR_YELLOW = "\033[33m"
+COLOR_GREEN = "\033[32m"
+COLOR_BLUE = "\033[34m"
+
+
+def set_color_enabled(enabled: bool) -> None:
+    global USE_COLOR
+    USE_COLOR = enabled
+
+
+def colored_label(label: str, color: str) -> str:
+    if not USE_COLOR:
+        return f"[{label}]"
+
+    return f"[{color}{label}{COLOR_RESET}]"
+
+
+def get_severity_color(severity: str) -> str:
+    if severity == "HIGH":
+        return COLOR_RED
+
+    if severity == "MEDIUM":
+        return COLOR_ORANGE
+
+    if severity == "LOW":
+        return COLOR_YELLOW
+
+    return COLOR_RESET
+
 
 def print_scan_start(path: str) -> None:
-    print(f"[INFO] Scanning: {path}")
+    print(f"{colored_label('INFO', COLOR_BLUE)} Scanning: {path}")
 
 
 def print_no_findings() -> None:
-    print("[OK] No potential secrets found.")
+    print(f"{colored_label('OK', COLOR_GREEN)} No potential secrets found.")
 
 
 def print_findings(findings: list[Finding]) -> None:
@@ -23,7 +58,7 @@ def print_findings(findings: list[Finding]) -> None:
     )
 
     print()
-    print(f"[WARNING] Found {len(sorted_findings)} potential secret(s):")
+    print(f"{colored_label('WARNING', COLOR_ORANGE)} Found {len(sorted_findings)} potential secret(s):")
     print()
 
     for finding in sorted_findings:
@@ -33,7 +68,9 @@ def print_findings(findings: list[Finding]) -> None:
 
 
 def print_finding(finding: Finding) -> None:
-    print(f"[{finding.severity}] {finding.rule_name}")
+    color = get_severity_color(finding.severity)
+
+    print(f"{colored_label(finding.severity, color)} {finding.rule_name}")
     print(f"  File: {finding.file_path}")
     print(f"  Line: {finding.line_number}")
     print(f"  Match: {finding.matched_text}")
@@ -45,12 +82,12 @@ def print_summary(findings: list[Finding]) -> None:
     medium_count = count_by_severity(findings, "MEDIUM")
     low_count = count_by_severity(findings, "LOW")
 
-    print("[SUMMARY]")
-    print(f"  HIGH:   {high_count}")
-    print(f"  MEDIUM: {medium_count}")
-    print(f"  LOW:    {low_count}")
+    print(f"{colored_label('SUMMARY', COLOR_BLUE)}")
+    print(f"  {colored_label('HIGH', COLOR_RED)}   {high_count}")
+    print(f"  {colored_label('MEDIUM', COLOR_ORANGE)} {medium_count}")
+    print(f"  {colored_label('LOW', COLOR_YELLOW)}    {low_count}")
     print()
-    print("[RESULT] Potential secrets found. Review before committing.")
+    print(f"{colored_label('RESULT', COLOR_ORANGE)} Potential secrets found. Review before committing.")
 
 
 def count_by_severity(findings: list[Finding], severity: str) -> int:
